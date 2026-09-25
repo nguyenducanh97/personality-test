@@ -1,0 +1,647 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>html{color-scheme:light dark}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+<title>인성검사 Practice Room</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+:root{
+  --ground:#FBF7F7; --surface:#FFFFFF; --sheet:#FFF1F1; --line:#E9B9BC; --omr:#C8373F; --omr-soft:#F7DADC;
+  --ink:#1E2230; --muted:#6A6470; --faint:#EAE3E5; --mark:#23232B; --mark-ink:#FFFFFF;
+  --good:#2E7D5B; --warn:#B7791F; --bad:#C8373F; --good-bg:#E4F3EC; --warn-bg:#FBF0DC; --bad-bg:#FBE4E5;
+  --focus:#3B5BDB;
+  --sans:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --ground:#161418; --surface:#1F1C21; --sheet:#2A1F22; --line:#6B3A3F; --omr:#F0727A; --omr-soft:#3A2427;
+    --ink:#EEEAEC; --muted:#A79FA6; --faint:#332E34; --mark:#EEEAEC; --mark-ink:#161418;
+    --good:#6BC79C; --warn:#E5B35C; --bad:#F0727A; --good-bg:#1D3129; --warn-bg:#352A17; --bad-bg:#3A2124;
+    --focus:#8AA2FF;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --ground:#161418; --surface:#1F1C21; --sheet:#2A1F22; --line:#6B3A3F; --omr:#F0727A; --omr-soft:#3A2427;
+  --ink:#EEEAEC; --muted:#A79FA6; --faint:#332E34; --mark:#EEEAEC; --mark-ink:#161418;
+  --good:#6BC79C; --warn:#E5B35C; --bad:#F0727A; --good-bg:#1D3129; --warn-bg:#352A17; --bad-bg:#3A2124;
+  --focus:#8AA2FF;
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.55;padding-inline:16px;padding-block:0 48px}
+.wrap{max-width:860px;margin:0 auto}
+h1,h2,h3{text-wrap:balance;margin:0;line-height:1.25}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--omr);font-weight:600}
+.muted{color:var(--muted)}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;padding-block:28px 18px;border-bottom:2px solid var(--omr)}
+.top h1{font-size:28px;font-weight:700;letter-spacing:-.01em}
+.top h1 span{color:var(--omr)}
+.top p{margin:4px 0 0;color:var(--muted);max-width:60ch}
+
+/* settings */
+.settings{display:flex;flex-wrap:wrap;gap:18px;padding-block:16px;border-bottom:1px solid var(--faint)}
+.seg{display:flex;flex-direction:column;gap:6px}
+.seg label.cap{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.04em}
+.seg .opts{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg .opts button{border:0;background:var(--surface);padding:7px 12px;cursor:pointer;font-size:13px}
+.seg .opts button+button{border-left:1px solid var(--line)}
+.seg .opts button[aria-pressed="true"]{background:var(--omr);color:#fff}
+
+/* test list: booklet table of contents */
+.toc{margin-top:22px}
+.toc h2{font-size:18px;margin-bottom:10px}
+.row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:14px 4px;border-bottom:1px dashed var(--line)}
+.row h3{font-size:16px;font-weight:600}
+.row .ko{color:var(--omr);font-weight:600;margin-right:6px}
+.row p{margin:3px 0 0;color:var(--muted);font-size:13.5px}
+.row .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;font-size:12px;color:var(--muted)}
+.row .meta span{border:1px solid var(--faint);border-radius:999px;padding:1px 8px;background:var(--surface)}
+.btn{border:1px solid var(--omr);background:var(--omr);color:#fff;border-radius:8px;padding:9px 16px;cursor:pointer;font-weight:600;white-space:nowrap}
+.btn.ghost{background:transparent;color:var(--omr)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+.twocol{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:30px}
+@media (max-width:720px){.twocol{grid-template-columns:1fr}}
+.panel h2{font-size:16px;margin-bottom:10px}
+.tips li{margin-bottom:6px}
+.tips{padding-left:18px;margin:0}
+table.hist{width:100%;border-collapse:collapse;font-size:13px}
+table.hist th,table.hist td{text-align:left;padding:6px 4px;border-bottom:1px solid var(--faint)}
+table.hist th{color:var(--muted);font-weight:600;font-size:12px}
+.tablewrap{overflow-x:auto}
+
+.gloss{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:0 18px;margin-top:10px}
+.gloss div{padding:7px 0;border-bottom:1px solid var(--faint);display:flex;justify-content:space-between;gap:8px;font-size:13.5px}
+.gloss b{font-weight:600}
+.gloss i{font-style:normal;color:var(--muted);text-align:right}
+
+/* test screen */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--ground);padding-block:12px 10px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between}
+.bar .t{font-weight:600}
+.clock{font-family:var(--mono);font-size:20px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
+.clock.low{color:var(--bad)}
+.prog{flex-basis:100%;height:6px;background:var(--faint);border-radius:99px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--omr);width:0;transition:width .2s}
+@media (prefers-reduced-motion:reduce){.prog i{transition:none}}
+
+.sheet{margin-top:22px;background:var(--sheet);border:1px solid var(--line);border-radius:12px;padding:22px}
+.qnum{font-family:var(--mono);color:var(--omr);font-weight:600;font-size:13px}
+.stmt{font-size:21px;font-weight:600;margin:6px 0 4px;line-height:1.45}
+.en{color:var(--muted);font-size:14.5px;margin:0}
+.peek{border:0;background:none;color:var(--omr);cursor:pointer;padding:0;font-size:13px;text-decoration:underline;text-underline-offset:3px}
+
+.scale{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:22px}
+.scale.two{grid-template-columns:repeat(2,1fr);max-width:360px}
+.bub{display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:0;cursor:pointer;padding:4px 0}
+.bub .o{width:42px;height:42px;border-radius:50%;border:2px solid var(--omr);display:grid;place-items:center;font-family:var(--mono);font-weight:600;color:var(--omr);background:var(--surface);transition:background .12s}
+.bub:hover .o{background:var(--omr-soft)}
+.bub[aria-pressed="true"] .o{background:var(--mark);border-color:var(--mark);color:var(--mark-ink)}
+.bub small{font-size:11.5px;color:var(--muted);text-align:center;line-height:1.3}
+.anchors{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:6px}
+
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:18px;flex-wrap:wrap}
+.keys{font-size:12px;color:var(--muted);margin-top:14px}
+kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 5px;background:var(--surface)}
+
+/* forced choice */
+.fc{width:100%;border-collapse:collapse;margin-top:14px}
+.fc th{font-size:12px;color:var(--muted);font-weight:600;padding:6px;text-align:center}
+.fc th:first-child{text-align:left}
+.fc td{padding:10px 6px;border-top:1px solid var(--line);vertical-align:middle}
+.fc td.c{text-align:center;width:64px}
+.fc .s{font-weight:600}
+.fc .s small{display:block;font-weight:400;color:var(--muted);font-size:13px}
+.mini{width:34px;height:34px;border-radius:50%;border:2px solid var(--omr);background:var(--surface);color:var(--omr);font-family:var(--mono);font-weight:600;cursor:pointer}
+.mini[aria-pressed="true"]{background:var(--mark);border-color:var(--mark);color:var(--mark-ink)}
+
+/* SJT */
+.opts-list{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.opt{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:start;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer}
+.opt .l{width:30px;height:30px;border-radius:50%;border:2px solid var(--omr);display:grid;place-items:center;font-family:var(--mono);font-weight:600;color:var(--omr)}
+.opt[aria-pressed="true"]{border-color:var(--mark)}
+.opt[aria-pressed="true"] .l{background:var(--mark);border-color:var(--mark);color:var(--mark-ink)}
+.opt small{display:block;color:var(--muted);font-size:13px}
+
+/* results */
+.res-head{padding-block:26px 12px;border-bottom:2px solid var(--omr)}
+.res-head h1{font-size:24px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0;margin-top:18px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface)}
+.stat{padding:14px 16px;border-right:1px solid var(--faint);border-bottom:1px solid var(--faint)}
+.stat b{display:block;font-family:var(--mono);font-size:24px;font-variant-numeric:tabular-nums}
+.stat span{font-size:12.5px;color:var(--muted)}
+.pill{display:inline-block;font-size:12px;font-weight:600;border-radius:999px;padding:2px 9px;margin-top:4px}
+.pill.good{background:var(--good-bg);color:var(--good)}
+.pill.warn{background:var(--warn-bg);color:var(--warn)}
+.pill.bad{background:var(--bad-bg);color:var(--bad)}
+.traits{margin-top:22px;display:flex;flex-direction:column;gap:10px}
+.tr{display:grid;grid-template-columns:150px 1fr 44px;gap:12px;align-items:center;font-size:14px}
+@media (max-width:520px){.tr{grid-template-columns:110px 1fr 40px}}
+.tr .track{height:12px;background:var(--faint);border-radius:99px;position:relative;overflow:hidden}
+.tr .track i{position:absolute;inset:0 auto 0 0;background:var(--omr);border-radius:99px}
+.tr .v{font-family:var(--mono);text-align:right}
+.fb{margin-top:24px;display:flex;flex-direction:column;gap:10px}
+.fb div{padding:12px 14px;border-radius:10px;border:1px solid var(--faint);background:var(--surface)}
+.fb div.warn{border-color:var(--warn);background:var(--warn-bg)}
+.fb div.bad{border-color:var(--bad);background:var(--bad-bg)}
+.fb div.good{border-color:var(--good);background:var(--good-bg)}
+.review{margin-top:24px}
+.review details{border-bottom:1px solid var(--faint);padding:10px 0}
+.review summary{cursor:pointer;font-weight:600}
+.review .ans{font-size:13.5px;margin-top:6px}
+.tag{font-size:11.5px;font-weight:600;border-radius:4px;padding:1px 6px;margin-left:6px}
+.tag.best{background:var(--good-bg);color:var(--good)}
+.tag.ok{background:var(--warn-bg);color:var(--warn)}
+.tag.bad{background:var(--bad-bg);color:var(--bad)}
+.note{font-size:12.5px;color:var(--muted);margin-top:26px;border-top:1px solid var(--faint);padding-top:12px}
+.confirm{margin-top:12px;padding:12px 14px;border:1px solid var(--warn);background:var(--warn-bg);border-radius:10px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+
+.mockgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+@media (max-width:560px){.mockgrid{grid-template-columns:repeat(3,1fr)}}
+.mock{display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px 6px;border:1.5px solid var(--line);border-radius:10px;background:var(--surface);cursor:pointer}
+.mock b{font-family:var(--mono);font-size:22px;color:var(--omr)}
+.mock span{font-size:11.5px;color:var(--muted)}
+.mock:hover{border-color:var(--omr);background:var(--omr-soft)}
+.toc+.toc{margin-top:30px}
+</style>
+
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+/* ---------- Item bank: 70 facets x 4 reworded statements (280 items). Items in a facet measure the same idea, so answers should agree. ---------- */
+const TRAITS = {
+  C:{ko:"성실성",en:"Conscientiousness"},
+  A:{ko:"협조성",en:"Cooperation"},
+  S:{ko:"정서안정",en:"Emotional stability"},
+  O:{ko:"개방성",en:"Openness"},
+  E:{ko:"외향성",en:"Sociability"},
+  I:{ko:"정직·윤리",en:"Integrity"},
+  G:{ko:"성취지향",en:"Achievement"}
+};
+// [trait, facet, [[reverse, 한국어, English] x4]]
+const FACETS = [
+["C","책임감",[[0,"맡은 일은 끝까지 책임지고 마무리한다.","I take responsibility for finishing whatever task I'm given."],[1,"일을 중간에 그만두는 경우가 종종 있다.","I often quit tasks halfway."],[0,"어떤 일이든 시작하면 끝을 본다.","Whatever I start, I see it through to the end."],[1,"맡은 일을 다른 사람에게 미루는 편이다.","I tend to push my tasks onto others."]]],
+["C","계획",[[0,"일을 시작하기 전에 계획을 먼저 세운다.","I make a plan before starting work."],[0,"일을 할 때는 미리 순서를 정해 둔다.","When I work, I decide the order of tasks in advance."],[1,"계획 없이 즉흥적으로 행동하는 편이다.","I tend to act spontaneously without a plan."],[1,"하루 일정을 따로 정리하지 않는다.","I don't bother organizing my daily schedule."]]],
+["C","기한",[[1,"마감 기한을 넘기는 경우가 종종 있다.","I often miss deadlines."],[1,"기한을 지키지 못할 때가 자주 있다.","I frequently fail to meet deadlines."],[0,"정해진 기한보다 일찍 일을 끝내려고 한다.","I try to finish work before the deadline."],[0,"약속 시간을 잘 지키는 편이다.","I tend to be on time for appointments."]]],
+["C","꼼꼼함",[[0,"세부 사항을 꼼꼼하게 확인한다.","I check details carefully."],[1,"일을 대충 끝내고 넘어갈 때가 많다.","I often finish work carelessly and move on."],[0,"제출하기 전에 한 번 더 검토한다.","I review my work once more before submitting it."],[1,"작은 오류는 확인하지 않고 넘어가는 편이다.","I tend to let small errors pass without checking them."]]],
+["C","정리정돈",[[0,"물건을 정리정돈하는 것을 좋아한다.","I like keeping things organized."],[1,"책상 위가 어지러워도 불편하지 않다.","A messy desk doesn't bother me."],[0,"자료를 찾기 쉽게 분류해 둔다.","I sort my files so they're easy to find."],[1,"필요한 물건을 찾느라 시간을 자주 쓴다.","I often waste time looking for things I need."]]],
+["C","미루기",[[1,"귀찮은 일은 되도록 미루는 편이다.","I tend to put off tedious tasks."],[0,"해야 할 일은 바로바로 처리한다.","I deal with tasks right away."],[1,"급한 일이 아니면 나중으로 미룬다.","If it's not urgent, I leave it for later."],[0,"하기 싫은 일도 먼저 끝내 놓는다.","I finish even unpleasant tasks first."]]],
+["C","끈기",[[0,"한번 정한 목표는 쉽게 포기하지 않는다.","Once I set a goal, I don't give up easily."],[0,"어려움이 있어도 끝까지 노력한다.","I keep trying to the end even when it's hard."],[1,"결과가 빨리 나오지 않으면 흥미를 잃는다.","I lose interest if results don't come quickly."],[1,"힘든 일은 금방 포기하는 편이다.","I tend to give up quickly on hard tasks."]]],
+["C","규칙적 생활",[[0,"규칙적인 생활을 유지한다.","I keep a regular daily routine."],[1,"생활 리듬이 자주 흐트러진다.","My daily rhythm is often disrupted."],[0,"매일 정해진 시간에 일어난다.","I get up at the same time every day."],[1,"기분에 따라 일하는 시간이 달라진다.","My working hours change depending on my mood."]]],
+["C","기록",[[0,"중요한 내용은 반드시 기록해 둔다.","I always write down important things."],[1,"들은 내용을 자주 잊어버린다.","I often forget what I've been told."],[0,"업무 내용을 메모하는 습관이 있다.","I have a habit of taking notes on my work."],[1,"기록하는 것은 시간 낭비라고 생각한다.","I think taking notes is a waste of time."]]],
+["C","신중함",[[0,"결정하기 전에 충분히 생각한다.","I think things through before deciding."],[1,"충동적으로 결정할 때가 많다.","I often make decisions on impulse."],[0,"중요한 일은 여러 번 확인한 후 진행한다.","I check important things several times before proceeding."],[1,"일단 저지르고 나중에 생각한다.","I act first and think later."]]],
+
+["A","경청",[[0,"다른 사람의 의견을 끝까지 듣는 편이다.","I tend to listen to others' opinions to the end."],[1,"상대방의 말을 중간에 끊을 때가 많다.","I often interrupt people while they're talking."],[0,"대화할 때 상대의 입장을 먼저 생각한다.","In conversation, I consider the other person's position first."],[1,"내 말만 하고 싶을 때가 많다.","I often just want to talk about my own views."]]],
+["A","팀워크",[[0,"팀으로 일할 때 더 좋은 결과가 나온다고 생각한다.","I think teamwork produces better results."],[0,"여럿이 함께 일하는 것을 선호한다.","I prefer working together with several people."],[1,"혼자 일하는 것이 훨씬 편하다.","Working alone is much more comfortable for me."],[1,"팀 활동은 비효율적이라고 생각한다.","I think team activities are inefficient."]]],
+["A","돕기",[[0,"동료가 어려움을 겪으면 먼저 돕는다.","When a colleague struggles, I offer help first."],[1,"남의 일에는 관심을 두지 않는다.","I don't pay attention to other people's work."],[0,"부탁을 받지 않아도 필요한 도움을 준다.","I help where needed even without being asked."],[1,"내 일이 아니면 신경 쓰지 않는다.","If it's not my job, I don't care."]]],
+["A","갈등 해결",[[0,"갈등이 생기면 대화로 해결하려고 노력한다.","When conflict arises, I try to resolve it by talking."],[1,"의견 충돌이 생기면 끝까지 내 주장을 고집한다.","In a disagreement, I insist on my view to the end."],[0,"다툼이 생기면 먼저 화해를 청한다.","After an argument, I'm the first to make peace."],[1,"불편한 사람과는 아예 대화를 피한다.","I avoid talking at all with people I find difficult."]]],
+["A","관용",[[0,"다른 사람의 실수를 너그럽게 이해한다.","I am understanding about others' mistakes."],[1,"남의 실수를 쉽게 용서하지 못한다.","I find it hard to forgive others' mistakes."],[0,"사람마다 사정이 있다고 생각한다.","I believe everyone has their own circumstances."],[1,"다른 사람의 단점이 먼저 눈에 띈다.","Other people's faults are the first thing I notice."]]],
+["A","지시 존중",[[0,"윗사람의 지시를 존중하고 따른다.","I respect and follow my superiors' instructions."],[1,"상사의 지시라도 마음에 들지 않으면 따르지 않는다.","I don't follow my boss's instructions if I don't like them."],[0,"조직의 결정에는 협조하는 편이다.","I tend to cooperate with the organization's decisions."],[1,"위에서 정한 방침에 불만이 많다.","I'm often unhappy with policies set from above."]]],
+["A","양보",[[0,"공동의 목표를 위해 내 방식을 양보할 수 있다.","I can give up my own way for a shared goal."],[1,"내 방식대로 해야 마음이 편하다.","I only feel comfortable when things are done my way."],[0,"팀의 결정이 내 생각과 달라도 따른다.","I follow the team's decision even if I think differently."],[1,"양보하면 지는 것이라고 생각한다.","I think giving way means losing."]]],
+["A","다른 의견",[[1,"내 의견과 다르면 쉽게 짜증이 난다.","I get irritated easily when others disagree with me."],[0,"다른 의견에도 배울 점이 있다고 생각한다.","I think different opinions have something to teach me."],[1,"나와 생각이 다른 사람과 일하기 싫다.","I don't like working with people who think differently."],[0,"반대 의견을 들어도 차분하게 받아들인다.","I accept opposing opinions calmly."]]],
+["A","공유",[[0,"동료의 성과를 진심으로 축하한다.","I sincerely congratulate colleagues on their achievements."],[1,"동료가 인정받으면 질투가 난다.","I feel jealous when a colleague gets recognition."],[0,"내가 아는 정보는 동료와 공유한다.","I share what I know with colleagues."],[1,"좋은 정보는 나만 알고 싶다.","I want to keep useful information to myself."]]],
+["A","배려",[[0,"다른 사람의 기분을 잘 살피는 편이다.","I tend to pay attention to how others feel."],[1,"말을 직설적으로 해서 상처를 줄 때가 있다.","I sometimes hurt people by being too blunt."],[0,"상대가 불편하지 않도록 말투에 신경 쓴다.","I choose my words so others don't feel uncomfortable."],[1,"다른 사람의 감정까지 신경 쓸 여유가 없다.","I have no room to care about others' feelings."]]],
+
+["S","침착함",[[0,"스트레스를 받아도 침착함을 유지한다.","I stay calm even under stress."],[0,"긴장되는 상황에서도 차분한 편이다.","I tend to stay composed even in tense situations."],[1,"급한 상황이 되면 당황한다.","I panic when things get urgent."],[1,"예상치 못한 일이 생기면 어쩔 줄 모른다.","I don't know what to do when something unexpected happens."]]],
+["S","걱정",[[1,"사소한 일에도 걱정이 많다.","I worry a lot even about small things."],[1,"작은 일에도 불안해지는 편이다.","I tend to feel anxious even over small things."],[0,"걱정거리가 있어도 크게 신경 쓰지 않는다.","Even when I have worries, they don't weigh on me much."],[0,"미래에 대해 대체로 낙관적이다.","I'm generally optimistic about the future."]]],
+["S","비판 수용",[[1,"비판을 받으면 오랫동안 기분이 상한다.","Criticism upsets me for a long time."],[0,"지적을 받으면 개선의 기회로 생각한다.","When I'm corrected, I see it as a chance to improve."],[1,"다른 사람의 평가에 민감하다.","I'm sensitive to how others evaluate me."],[0,"비판을 들어도 금방 털어낸다.","I shake off criticism quickly."]]],
+["S","기분 안정",[[1,"기분 변화가 심한 편이다.","My mood changes a lot."],[0,"감정 기복이 거의 없다.","My emotions rarely go up and down."],[1,"사소한 일로 하루 기분이 좌우된다.","Small things decide my mood for the whole day."],[0,"대체로 마음이 편안한 상태이다.","I am generally at ease."]]],
+["S","위기 대처",[[0,"어려운 상황에서도 쉽게 흔들리지 않는다.","I'm not easily shaken in difficult situations."],[1,"문제가 생기면 쉽게 무너진다.","I fall apart easily when problems come up."],[0,"위기 상황일수록 냉정하게 판단한다.","The more critical the situation, the more coolly I judge it."],[1,"어려운 일이 겹치면 아무것도 할 수 없다.","When difficulties pile up, I can't do anything."]]],
+["S","회복력",[[0,"실패해도 금방 다시 일어선다.","Even when I fail, I bounce back quickly."],[1,"한 번 실패하면 오래 우울하다.","After one failure, I stay down for a long time."],[0,"실패를 경험으로 받아들인다.","I accept failure as experience."],[1,"실수를 하면 계속 그 생각만 난다.","When I make a mistake, I can't stop thinking about it."]]],
+["S","분노 조절",[[1,"화가 나면 감정을 참기 어렵다.","When I'm angry, I find it hard to control my emotions."],[0,"화가 나도 말과 행동을 조심한다.","Even when angry, I'm careful with my words and actions."],[1,"사소한 일에도 쉽게 화를 낸다.","I lose my temper easily over small things."],[0,"감정을 잘 조절하는 편이다.","I tend to control my emotions well."]]],
+["S","압박 대처",[[0,"압박감 속에서도 일을 잘 해낸다.","I perform well under pressure."],[1,"긴장하면 실수를 자주 한다.","I make frequent mistakes when I'm nervous."],[0,"일이 몰려도 우선순위를 정해 처리한다.","When work piles up, I set priorities and handle it."],[1,"업무가 많아지면 쉽게 지친다.","I get worn out easily when the workload grows."]]],
+["S","자신감",[[0,"나는 내 능력을 믿는 편이다.","I tend to trust my own abilities."],[1,"내 능력을 자주 의심한다.","I often doubt my abilities."],[0,"새로운 일도 해낼 수 있다는 자신이 있다.","I'm confident I can handle new tasks."],[1,"남과 비교하며 위축될 때가 많다.","I often feel small when comparing myself with others."]]],
+["S","독립 적응",[[0,"낯선 곳에서 혼자 지내도 잘 적응한다.","I adapt well even when living alone in an unfamiliar place."],[1,"가족과 떨어져 있으면 일에 집중하기 어렵다.","It's hard to focus on work when I'm away from my family."],[0,"혼자 있는 시간도 즐길 줄 안다.","I know how to enjoy time on my own."],[1,"외로움을 쉽게 느낀다.","I feel lonely easily."]]],
+
+["O","새로운 방법",[[0,"새로운 방법을 시도하는 것을 좋아한다.","I like trying new methods."],[1,"익숙한 방식이 가장 안전하다고 생각한다.","I think familiar ways are always the safest."],[0,"기존 방식보다 나은 방법이 있는지 고민한다.","I think about whether there's a better way than the current one."],[1,"해 오던 방식을 바꾸는 것은 번거롭다.","Changing the way things have been done is a hassle."]]],
+["O","다문화",[[0,"다른 문화에 대해 배우는 것이 즐겁다.","I enjoy learning about other cultures."],[0,"외국인과 함께 일하는 것이 즐겁다.","I enjoy working with people from other countries."],[1,"문화가 다른 사람과 지내는 것은 불편하다.","Being around people from other cultures is uncomfortable."],[1,"외국 음식이나 풍습은 낯설어서 피한다.","I avoid foreign food and customs because they feel strange."]]],
+["O","환경 적응",[[0,"새로운 환경에 빠르게 적응한다.","I adapt quickly to new environments."],[0,"낯선 곳에서도 금방 익숙해진다.","I get used to unfamiliar places quickly."],[1,"환경이 바뀌면 적응하는 데 오래 걸린다.","It takes me a long time to adjust when my environment changes."],[1,"이사나 부서 이동은 큰 스트레스다.","Moving house or changing departments is very stressful."]]],
+["O","변화 수용",[[1,"변화는 되도록 피하고 싶다.","I'd rather avoid change."],[0,"변화는 성장의 기회라고 생각한다.","I think change is a chance to grow."],[1,"안정적인 것이 무엇보다 중요하다.","Stability matters more than anything."],[0,"새로운 제도가 도입되면 먼저 익혀 본다.","When a new system is introduced, I'm among the first to learn it."]]],
+["O","호기심",[[0,"호기심이 많아 모르는 것은 찾아본다.","I'm curious, so I look up things I don't know."],[1,"궁금한 것이 있어도 그냥 넘어간다.","Even if I'm curious, I just let it go."],[0,"여러 분야에 관심이 많다.","I'm interested in many fields."],[1,"내 전공 외에는 관심이 없다.","I'm not interested in anything outside my major."]]],
+["O","다양한 관점",[[0,"문제를 여러 관점에서 생각해 본다.","I look at problems from several angles."],[1,"한 가지 방법만 고집하는 편이다.","I tend to stick to only one method."],[0,"다른 사람의 아이디어를 적극적으로 받아들인다.","I actively take on other people's ideas."],[1,"정답은 하나뿐이라고 생각한다.","I think there is only one right answer."]]],
+["O","배움",[[0,"새로운 기술을 배우는 데 시간을 투자한다.","I invest time in learning new skills."],[0,"퇴근 후에도 자기 계발을 한다.","I work on self-development even after work."],[1,"배움은 학교에서 끝났다고 생각한다.","I think learning ended at school."],[1,"새로운 것을 배우는 것은 부담스럽다.","Learning new things feels like a burden."]]],
+["O","창의성",[[0,"독창적인 아이디어를 자주 떠올린다.","I often come up with original ideas."],[1,"창의적인 일보다 정해진 일이 편하다.","Routine work is more comfortable than creative work."],[0,"상상력이 풍부하다는 말을 듣는다.","People say I have a rich imagination."],[1,"새로운 아이디어를 내는 것은 어렵다.","Coming up with new ideas is hard for me."]]],
+["O","언어·해외",[[0,"외국어를 배우는 것이 즐겁다.","I enjoy learning foreign languages."],[0,"해외에서 일할 기회가 있다면 도전하고 싶다.","If I had a chance to work abroad, I'd take it."],[1,"외국어로 말하는 것은 피하고 싶다.","I'd rather avoid speaking in a foreign language."],[1,"해외 근무는 부담스럽다.","Working abroad feels like too much."]]],
+["O","피드백",[[0,"내 방식에 대한 피드백을 적극적으로 구한다.","I actively ask for feedback on how I work."],[1,"내 방식이 틀렸다는 말을 듣기 싫다.","I don't like being told my way is wrong."],[0,"잘못된 점을 알게 되면 바로 고친다.","When I find out I'm wrong, I fix it right away."],[1,"한번 정한 생각은 잘 바꾸지 않는다.","Once I've made up my mind, I rarely change it."]]],
+
+["E","첫 만남",[[0,"처음 만난 사람과도 쉽게 이야기한다.","I talk easily even with people I've just met."],[0,"모르는 사람에게 먼저 말을 거는 편이다.","I tend to start conversations with strangers."],[1,"낯을 많이 가린다.","I'm very shy with new people."],[1,"처음 보는 사람과 있으면 어색하다.","I feel awkward around people I've just met."]]],
+["E","발표",[[1,"여러 사람 앞에서 발표하는 것이 부담스럽다.","Presenting in front of many people is a burden to me."],[0,"발표할 기회가 있으면 먼저 나선다.","When there's a chance to present, I volunteer."],[1,"사람들의 주목을 받으면 긴장된다.","I get nervous when people pay attention to me."],[0,"많은 사람 앞에서도 내 의견을 말할 수 있다.","I can state my opinion even in front of many people."]]],
+["E","분위기",[[0,"모임에서 분위기를 이끄는 편이다.","I tend to set the mood at gatherings."],[1,"모임에서는 주로 듣기만 한다.","At gatherings, I mostly just listen."],[0,"주변 사람들을 즐겁게 해 주는 편이다.","I tend to cheer up the people around me."],[1,"여러 사람이 모이는 자리는 피곤하다.","Gatherings with many people tire me out."]]],
+["E","사교 에너지",[[1,"조용히 혼자 있는 시간이 더 좋다.","I prefer quiet time alone."],[0,"쉬는 날에도 사람들을 만나는 것이 좋다.","Even on days off, I like meeting people."],[1,"주말에는 혼자 쉬는 것이 좋다.","On weekends I like resting alone."],[0,"사람들과 어울릴 때 에너지를 얻는다.","Being with people gives me energy."]]],
+["E","자기 표현",[[0,"내 생각을 자신 있게 표현한다.","I express my ideas confidently."],[1,"생각이 있어도 말하지 않을 때가 많다.","Even when I have an opinion, I often keep quiet."],[0,"필요한 말은 분명하게 한다.","I say what needs to be said clearly."],[1,"내 의견을 말하기 전에 망설인다.","I hesitate before giving my opinion."]]],
+["E","대인 관계",[[0,"새로운 사람을 사귀는 것이 즐겁다.","I enjoy making new friends."],[1,"친구를 사귀는 데 시간이 오래 걸린다.","It takes me a long time to make friends."],[0,"다양한 사람들과 폭넓게 교류한다.","I interact widely with many kinds of people."],[1,"소수의 사람과만 가깝게 지낸다.","I'm close to only a few people."]]],
+["E","리더십",[[0,"모임에서 리더 역할을 맡는 경우가 많다.","I often take the leader role in groups."],[1,"앞에 나서는 것보다 따르는 것이 편하다.","Following is more comfortable than leading."],[0,"사람들을 이끌어 목표를 달성한 경험이 있다.","I've led people to achieve a goal."],[1,"책임자 역할은 되도록 맡고 싶지 않다.","I'd rather not take the person-in-charge role."]]],
+["E","활동성",[[0,"활동적인 일을 좋아한다.","I like active work."],[1,"몸을 움직이는 일은 귀찮다.","Physical work feels like a hassle."],[0,"현장에서 직접 뛰는 일이 즐겁다.","I enjoy hands-on work in the field."],[1,"하루 종일 자리에 앉아 있는 일이 편하다.","Sitting at a desk all day suits me."]]],
+["E","설득",[[0,"다른 사람을 설득하는 데 자신이 있다.","I'm confident at persuading others."],[1,"협상하는 자리는 불편하다.","Negotiation situations make me uncomfortable."],[0,"내 아이디어의 장점을 잘 설명한다.","I explain the strengths of my ideas well."],[1,"상대가 반대하면 쉽게 물러선다.","I back down easily when someone disagrees."]]],
+["E","먼저 다가가기",[[0,"오랜만에 친구에게 먼저 연락한다.","I'm the one who reaches out to old friends."],[1,"먼저 연락하는 일은 드물다.","I rarely contact people first."],[0,"새로 온 동료에게 먼저 인사한다.","I greet new colleagues first."],[1,"다른 사람이 다가오기를 기다린다.","I wait for others to approach me."]]],
+
+["I","규정 준수",[[0,"회사의 규정은 상황과 관계없이 지켜야 한다.","Company rules should be followed regardless of the situation."],[1,"비효율적인 규정은 무시해도 된다.","It's fine to ignore inefficient rules."],[0,"불편하더라도 정해진 절차를 따른다.","I follow set procedures even when it's inconvenient."],[1,"규칙은 상황에 따라 융통성 있게 어겨도 된다.","Rules can be flexibly broken depending on the situation."]]],
+["I","과정 중시",[[1,"결과가 좋다면 과정은 크게 중요하지 않다.","If the result is good, the process doesn't matter much."],[0,"좋은 결과도 올바른 과정에서 나와야 한다.","Even good results must come from the right process."],[1,"목표 달성을 위해서라면 편법도 괜찮다.","Shortcuts that bend the rules are fine if they reach the goal."],[0,"성과보다 정직이 더 중요하다.","Honesty matters more than performance."]]],
+["I","실수 보고",[[0,"내 실수는 숨기지 않고 바로 보고한다.","I report my mistakes right away instead of hiding them."],[0,"실수를 하면 솔직하게 먼저 말한다.","When I make a mistake, I'm the first to say so honestly."],[1,"작은 실수는 굳이 알릴 필요가 없다.","There's no need to mention small mistakes."],[1,"내 실수가 드러나지 않기를 바란 적이 많다.","I've often hoped my mistakes wouldn't come to light."]]],
+["I","감독 없이",[[1,"들키지 않는다면 작은 규칙은 어겨도 된다.","It's OK to break small rules if no one finds out."],[1,"아무도 모른다면 규칙을 조금 어겨도 괜찮다.","If nobody knows, bending the rules a little is fine."],[0,"보는 사람이 없어도 규칙을 지킨다.","I follow the rules even when no one is watching."],[0,"감독이 없어도 똑같이 일한다.","I work the same way even without supervision."]]],
+["I","회사 자원",[[0,"회사 물품을 개인적으로 사용해서는 안 된다.","Company supplies should not be used for personal purposes."],[1,"회사 비품 몇 개쯤은 가져가도 괜찮다.","Taking a few company supplies home is no big deal."],[0,"근무 시간에는 개인적인 일을 하지 않는다.","I don't do personal things during working hours."],[1,"업무 시간에 개인 용무를 보는 것은 괜찮다.","Handling personal errands during work hours is fine."]]],
+["I","정직",[[0,"손해를 보더라도 정직하게 행동한다.","I act honestly even if it costs me."],[1,"상황에 따라 거짓말이 필요할 때도 있다.","Sometimes a lie is necessary, depending on the situation."],[0,"불리한 사실도 솔직하게 말한다.","I tell the truth even when it's to my disadvantage."],[1,"작은 거짓말은 인간관계에 도움이 된다.","Small lies help relationships."]]],
+["I","공정성",[[0,"누구에게나 공정하게 대한다.","I treat everyone fairly."],[1,"친한 사람에게는 규칙을 조금 봐줄 수 있다.","I can go easy on the rules for people I'm close to."],[0,"개인적인 친분보다 원칙을 우선한다.","I put principles before personal relationships."],[1,"아는 사람의 부탁이라면 원칙을 조금 어겨도 된다.","For a request from someone I know, bending the principles a little is fine."]]],
+["I","보안",[[0,"회사의 정보를 외부에 말하지 않는다.","I don't talk about company information outside."],[1,"업무 이야기를 친구에게 자세히 하는 편이다.","I tend to tell friends about my work in detail."],[0,"보안 규정을 철저히 지킨다.","I strictly follow security rules."],[1,"비밀번호를 동료와 공유해도 괜찮다.","It's fine to share my password with colleagues."]]],
+["I","안전",[[0,"안전 수칙은 반드시 지켜야 한다.","Safety rules must always be followed."],[1,"바쁠 때는 안전 절차를 생략해도 된다.","When busy, it's OK to skip safety procedures."],[0,"위험한 상황을 발견하면 즉시 보고한다.","When I spot a dangerous situation, I report it at once."],[1,"보호 장비는 불편해서 잘 착용하지 않는다.","I rarely wear protective equipment because it's uncomfortable."]]],
+["I","책임 인정",[[0,"문제가 생기면 내 책임부터 돌아본다.","When a problem arises, I look at my own responsibility first."],[1,"잘못된 일은 다른 사람 탓일 때가 많다.","When things go wrong, it's often someone else's fault."],[0,"팀의 실패도 내 일처럼 책임진다.","I take responsibility for the team's failures as if they were mine."],[1,"불리한 상황에서는 책임을 피하고 싶다.","In bad situations, I want to avoid responsibility."]]],
+
+["G","경쟁심",[[0,"남보다 더 잘하고 싶은 욕심이 있다.","I have a strong desire to do better than others."],[1,"다른 사람과 경쟁하는 것은 싫다.","I dislike competing with others."],[0,"경쟁 상황에서 더 힘이 난다.","Competition gives me more energy."],[1,"1등이 되는 것에는 관심이 없다.","I'm not interested in being number one."]]],
+["G","도전",[[0,"어려운 목표에 도전하는 것을 좋아한다.","I like taking on difficult goals."],[0,"쉽지 않은 과제일수록 해 보고 싶어진다.","The harder a task is, the more I want to try it."],[1,"실패할 것 같은 일은 시작하지 않는다.","I don't start things I might fail at."],[1,"쉬운 일만 골라서 하는 편이다.","I tend to pick only easy tasks."]]],
+["G","성장 욕구",[[1,"현재 수준에 만족하는 편이다.","I tend to be satisfied with my current level."],[0,"지금보다 더 발전하고 싶다.","I want to develop further than I am now."],[1,"더 노력할 필요를 느끼지 않는다.","I don't feel the need to try harder."],[0,"항상 더 높은 목표를 세운다.","I always set higher goals."]]],
+["G","꾸준함",[[0,"목표를 이루기 위해 꾸준히 노력한다.","I work steadily to reach my goals."],[1,"처음에만 열심히 하는 편이다.","I tend to work hard only at the beginning."],[0,"장기적인 목표를 위해 당장의 즐거움을 참는다.","I give up short-term fun for long-term goals."],[1,"무언가를 꾸준히 해 본 적이 별로 없다.","I've rarely kept doing anything consistently."]]],
+["G","추가 노력",[[0,"성과를 내기 위해 추가 시간을 투자할 수 있다.","I can invest extra time to achieve results."],[1,"정해진 시간 이상으로 일하고 싶지 않다.","I don't want to work beyond set hours."],[0,"필요하다면 주말에도 일할 수 있다.","If necessary, I can work on weekends."],[1,"기대 이상의 성과를 낼 필요는 없다.","There's no need to exceed expectations."]]],
+["G","전문성",[[0,"내 분야에서 최고의 전문가가 되고 싶다.","I want to become a top expert in my field."],[1,"전문성보다 편한 업무가 더 좋다.","I prefer easy work to building expertise."],[0,"업무 관련 지식을 계속 쌓는다.","I keep building work-related knowledge."],[1,"지금 아는 것만으로도 충분하다.","What I know now is enough."]]],
+["G","높은 기준",[[0,"스스로 높은 기준을 정하고 일한다.","I set high standards for myself."],[1,"적당히 하면 된다고 생각한다.","I think 'good enough' is fine."],[0,"결과물의 완성도를 중요하게 생각한다.","I care about the quality of what I produce."],[1,"평균 정도만 하면 충분하다.","Being average is enough."]]],
+["G","주도성",[[0,"시키지 않아도 필요한 일을 찾아서 한다.","I find and do what's needed without being told."],[1,"지시받은 일만 하는 것이 편하다.","I'm comfortable doing only what I'm told."],[0,"개선할 점이 보이면 먼저 제안한다.","When I see something to improve, I suggest it first."],[1,"먼저 나서서 일을 만드는 것은 피한다.","I avoid creating extra work by stepping forward."]]],
+["G","경력 목표",[[0,"나의 경력 목표가 분명하다.","My career goals are clear."],[1,"앞으로 무엇을 하고 싶은지 잘 모르겠다.","I'm not sure what I want to do in the future."],[0,"5년 후의 내 모습을 구체적으로 그려 본다.","I picture specifically where I'll be in five years."],[1,"계획보다는 흘러가는 대로 산다.","I go with the flow rather than making plans."]]],
+["G","책임 확대",[[0,"노력한 만큼 인정받고 싶다.","I want to be recognized for the effort I put in."],[1,"승진에는 큰 관심이 없다.","I'm not very interested in promotion."],[0,"더 큰 책임을 맡는 것이 기대된다.","I look forward to taking on bigger responsibilities."],[1,"책임이 늘어나는 것은 부담스럽다.","More responsibility feels like a burden."]]]
+];
+// "Too perfect" (social desirability) items: agreeing = faking good
+const LIE = [
+ ["나는 지금까지 한 번도 거짓말을 한 적이 없다.","I have never told a lie in my life."],
+ ["나는 누구에게도 화를 낸 적이 없다.","I have never gotten angry at anyone."],
+ ["나는 모든 사람을 좋아한다.","I like everyone."],
+ ["나는 약속에 늦은 적이 한 번도 없다.","I have never once been late for an appointment."],
+ ["나는 남의 험담을 해 본 적이 없다.","I have never gossiped about anyone."],
+ ["나는 어떤 일을 해도 실수하지 않는다.","I never make mistakes, whatever I do."],
+ ["나는 귀찮다고 느낀 적이 전혀 없다.","I have never felt that something was a hassle."],
+ ["나는 한 번도 규칙을 어긴 적이 없다.","I have never broken a rule."],
+ ["나는 다른 사람을 부러워한 적이 없다.","I have never envied anyone."],
+ ["나는 한 번도 게으름을 피운 적이 없다.","I have never slacked off."],
+ ["나는 항상 모든 사람에게 친절하다.","I am always kind to everyone."],
+ ["나는 한 번도 약속을 어긴 적이 없다.","I have never broken a promise."],
+ ["나는 불평을 해 본 적이 없다.","I have never complained."],
+ ["나는 모든 일을 완벽하게 처리한다.","I handle everything perfectly."],
+ ["나는 누군가를 미워해 본 적이 없다.","I have never disliked anyone."],
+ ["나는 다른 사람의 말을 오해한 적이 한 번도 없다.","I have never misunderstood what someone said."]
+];
+const SJT = [
+ {ko:"팀장이 비효율적이라고 생각되는 절차를 따르라고 지시했다.",en:"Your team leader tells you to follow a procedure you think is inefficient.",
+  o:[["말없이 그대로 따른다.","Follow it silently.","ok"],["지시대로 하되, 나중에 개선안을 정중하게 제안한다.","Follow it, then politely suggest an improvement later.","best"],["내가 생각하는 방식으로 처리한다.","Do it your own way.","worst"],["동료들에게 불만을 이야기한다.","Complain to colleagues.","bad"]],
+  why:"Respect the process and hierarchy, but contribute ideas through the proper channel."},
+ {ko:"마감 직전, 내 실수로 인한 데이터 오류를 발견했다.",en:"Just before a deadline, you find a data error caused by your own mistake.",
+  o:[["아무도 모를 것이므로 그대로 제출한다.","Submit it anyway, since no one will notice.","worst"],["즉시 상사에게 알리고 수정 시간을 요청한다.","Tell your manager immediately and ask for time to fix it.","best"],["조용히 고친 뒤 늦게 제출하고 이유는 말하지 않는다.","Fix it quietly, submit late, and don't explain why.","bad"],["동료에게 대신 고쳐 달라고 부탁한다.","Ask a colleague to fix it for you.","bad"]],
+  why:"Honesty and fast reporting (보고) are core values. Hiding a mistake is the worst choice."},
+ {ko:"동료가 업무량이 많아 힘들어한다. 나의 일은 거의 끝났다.",en:"A colleague is overloaded. Your own work is almost done.",
+  o:[["먼저 도울 일이 있는지 묻는다.","Ask first whether you can help.","best"],["내 일만 끝내고 퇴근한다.","Finish your work and go home.","bad"],["상사에게 동료가 느리다고 보고한다.","Tell the manager your colleague is slow.","worst"],["도움 요청을 받으면 돕는다.","Help if they ask you.","ok"]],
+  why:"Proactive teamwork is rated higher than waiting to be asked."},
+ {ko:"회의에서 선배의 의견이 틀렸다고 생각한다.",en:"In a meeting, you think a senior colleague's idea is wrong.",
+  o:[["회의 중 바로 틀렸다고 지적한다.","Say it's wrong right away in the meeting.","bad"],["아무 말도 하지 않는다.","Say nothing.","bad"],["근거 자료를 준비해 적절한 때에 정중히 의견을 낸다.","Prepare evidence and share your view politely at a suitable time.","best"],["회의 후 다른 동료들과 선배를 비판한다.","Criticize the senior with other colleagues afterward.","worst"]],
+  why:"Speak up, but with evidence and respect for seniority."},
+ {ko:"공장 현장에서 안전 수칙을 지키면 작업이 늦어진다.",en:"On the plant floor, following safety rules slows the work down.",
+  o:[["급할 때는 안전 수칙을 생략한다.","Skip safety rules when you're in a hurry.","worst"],["안전 수칙을 지키고, 일정 문제는 상사와 상의한다.","Follow the safety rules and discuss the schedule with your manager.","best"],["보는 사람이 없으면 생략한다.","Skip them when no one is watching.","worst"],["동료들이 생략하면 따라 한다.","Skip them if colleagues do.","bad"]],
+  why:"Safety is non-negotiable in manufacturing."},
+ {ko:"외국인 동료와 언어 문제로 오해가 생겼다.",en:"A misunderstanding arises with a foreign colleague because of language.",
+  o:[["다시 설명하고 이해했는지 확인하며, 필요하면 글로 정리한다.","Explain again, check understanding, and put it in writing if needed.","best"],["그냥 넘어간다.","Let it go.","bad"],["그 동료와 일하지 않게 해 달라고 요청한다.","Ask not to work with that colleague.","worst"],["다른 사람에게 통역을 부탁한다.","Ask someone else to interpret.","ok"]],
+  why:"Taking ownership of clear communication is the strongest answer."},
+ {ko:"퇴근 직전 상사가 급한 업무를 맡겼다. 개인 약속이 있다.",en:"Right before you leave, your manager gives you urgent work. You have personal plans.",
+  o:[["약속을 이유로 거절한다.","Refuse because of your plans.","bad"],["업무의 긴급성을 확인하고, 필요하면 약속을 조정한다.","Check how urgent it is and adjust your plans if needed.","best"],["대충 끝내고 퇴근한다.","Rush through it and leave.","worst"],["동료에게 넘긴다.","Pass it to a colleague.","bad"]],
+  why:"Clarify the real deadline, then show commitment."},
+ {ko:"입사 초기, 업무 방법을 잘 모르겠다.",en:"Early in your job, you don't know how to do a task.",
+  o:[["혼자 해결될 때까지 계속 시도한다.","Keep trying alone until it works.","ok"],["먼저 자료를 찾아보고, 모르는 부분을 정리해 선배에게 질문한다.","Research first, list what you don't understand, then ask a senior.","best"],["모르는 채로 대충 처리한다.","Do it roughly without understanding.","worst"],["선배에게 처음부터 전부 알려 달라고 한다.","Ask a senior to explain everything from the start.","bad"]],
+  why:"Initiative first, then focused questions that respect seniors' time."},
+ {ko:"동료가 회사 비용을 개인적으로 사용하는 것을 알게 되었다.",en:"You find out a colleague is using company money for personal purposes.",
+  o:[["모른 척한다.","Pretend you didn't notice.","bad"],["동료에게 직접 이야기하고, 계속되면 정해진 절차로 보고한다.","Talk to the colleague directly, and report through proper channels if it continues.","best"],["다른 동료들에게 소문을 낸다.","Spread it among other colleagues.","bad"],["나도 같이 사용한다.","Start doing the same.","worst"]],
+  why:"Integrity is weighted heavily. Use official channels, never gossip."},
+ {ko:"새로 도입된 시스템이 불편해서 팀원들의 불만이 많다.",en:"A newly introduced system is inconvenient and the team complains a lot.",
+  o:[["함께 불평한다.","Complain along with them.","bad"],["사용법을 익혀 동료들을 돕고, 개선점을 정리해 건의한다.","Learn it well, help colleagues, and collect suggestions for improvement.","best"],["예전 방식으로 몰래 계속한다.","Secretly keep using the old way.","worst"],["상사가 해결해 주기를 기다린다.","Wait for the manager to solve it.","ok"]],
+  why:"Adapting to change and helping others adapt shows openness and cooperation."},
+ {ko:"내가 제안한 아이디어가 채택되지 않았다.",en:"The idea you proposed was not adopted.",
+  o:[["결정을 존중하고 이유를 물어 다음 제안에 반영한다.","Respect the decision, ask why, and use it for your next proposal.","best"],["실망해서 앞으로는 의견을 내지 않는다.","Feel disappointed and stop sharing ideas.","bad"],["결정한 사람을 비판한다.","Criticize the person who decided.","worst"],["같은 제안을 계속 반복한다.","Keep repeating the same proposal.","bad"]],
+  why:"Emotional stability plus a learning attitude."},
+ {ko:"해외 법인(베트남)으로 발령이 났다. 현지 직원들과 처음 일하게 된다.",en:"You're posted to the Vietnam subsidiary and will work with local staff for the first time.",
+  o:[["본사 방식을 그대로 따르도록 요구한다.","Require them to follow HQ's way exactly.","bad"],["현지 직원들의 의견을 먼저 듣고, 본사 기준과 현지 상황을 조율한다.","Listen to local staff first, then balance HQ standards with local conditions.","best"],["현지 직원들에게 모든 것을 맡긴다.","Leave everything to the local staff.","bad"],["한국인 직원들과만 소통한다.","Communicate only with Korean staff.","worst"]],
+  why:"Bridging HQ and local teams is exactly the role of a global hire."},
+ {ko:"협력 부서가 자료를 늦게 보내 내 업무가 지연되고 있다.",en:"Another department is late sending data you need, and your work is delayed.",
+  o:[["상사에게 그 부서를 비난한다.","Blame that department to your manager.","bad"],["담당자에게 정중히 상황을 설명하고 가능한 일정을 함께 정한다.","Politely explain the situation to the person in charge and agree on a realistic date together.","best"],["연락 없이 계속 기다린다.","Keep waiting without contacting them.","ok"],["자료 없이 추측으로 진행한다.","Carry on by guessing the data.","worst"]],
+  why:"Solve it directly and politely before escalating. Never guess data."},
+ {ko:"내가 교육하는 신입 사원이 같은 질문을 여러 번 한다.",en:"A new hire you're training asks the same question several times.",
+  o:[["짜증을 내며 스스로 찾아보라고 한다.","Get irritated and tell them to look it up.","worst"],["이해하기 쉽게 다시 설명하고 매뉴얼로 정리해 준다.","Explain again more simply and write a short manual for them.","best"],["다른 사람에게 물어보라고 한다.","Tell them to ask someone else.","bad"],["대답은 하되 짧게만 한다.","Answer, but only briefly.","ok"]],
+  why:"Patience and making knowledge reusable shows leadership."},
+ {ko:"거래처가 무리한 납기 단축을 요구한다.",en:"A customer demands an unreasonably earlier delivery date.",
+  o:[["무조건 가능하다고 약속한다.","Promise it can be done, no matter what.","bad"],["바로 거절한다.","Refuse immediately.","bad"],["생산 가능 여부를 확인한 후 현실적인 대안을 제시한다.","Check production capacity, then offer a realistic alternative.","best"],["대답을 미루고 연락을 피한다.","Delay answering and avoid their calls.","worst"]],
+  why:"Balance customer needs with facts. Never over-promise or disappear."},
+ {ko:"설비에서 이상한 소리가 나지만 생산 목표가 급하다.",en:"Equipment is making a strange noise, but the production target is urgent.",
+  o:[["목표를 달성한 뒤에 점검한다.","Check it after reaching the target.","bad"],["즉시 담당자에게 보고하고 안전 절차에 따라 점검한다.","Report it immediately and inspect it following safety procedures.","best"],["소리가 커질 때까지 지켜본다.","Watch it until the noise gets louder.","worst"],["동료에게 괜찮은지 물어보고 계속 가동한다.","Ask a colleague if it's fine and keep running.","bad"]],
+  why:"Equipment warnings come before production targets."},
+ {ko:"팀 프로젝트에서 한 팀원이 맡은 일을 하지 않는다.",en:"A team member isn't doing their part of a project.",
+  o:[["그 팀원의 일을 몰래 대신한다.","Quietly do their work for them.","ok"],["먼저 그 팀원과 이야기해 이유를 듣고, 해결되지 않으면 팀장과 상의한다.","Talk with them first to understand why, and consult the team leader if it isn't resolved.","best"],["팀장에게 바로 불만을 말한다.","Complain to the team leader right away.","bad"],["다른 팀원들과 뒷담화를 한다.","Gossip about them with other members.","worst"]],
+  why:"Direct, respectful conversation first; escalate only if needed."},
+ {ko:"상사가 나의 성과를 자신의 성과처럼 보고했다.",en:"Your manager reported your work as their own achievement.",
+  o:[["여러 사람 앞에서 공개적으로 항의한다.","Protest publicly in front of others.","bad"],["감정을 조절하고, 적절한 때 상사와 1:1로 정중하게 이야기한다.","Stay calm and talk politely one-on-one with your manager at a good time.","best"],["동료들에게 상사를 험담한다.","Speak badly of the manager to colleagues.","worst"],["앞으로는 일을 적당히만 한다.","Do only the minimum from now on.","bad"]],
+  why:"Emotional control and private, respectful communication."},
+ {ko:"업무 중 해결 방법을 모르는 기술적 문제가 생겼다.",en:"A technical problem you don't know how to solve comes up at work.",
+  o:[["원인을 분석하고 자료를 찾은 뒤, 필요하면 전문가의 도움을 구한다.","Analyze the cause, research it, and ask an expert if needed.","best"],["문제를 무시하고 넘어간다.","Ignore it and move on.","worst"],["바로 상사에게 해결해 달라고 한다.","Ask your manager to solve it right away.","ok"],["다른 사람이 발견할 때까지 기다린다.","Wait until someone else notices.","bad"]],
+  why:"Ownership plus knowing when to ask for help."},
+ {ko:"팀 회식에 참석하기 어려운 사정이 있다.",en:"You have a reason you can't attend a team dinner.",
+  o:[["아무 말 없이 불참한다.","Skip it without saying anything.","worst"],["미리 정중하게 사정을 설명하고 다음에 꼭 참석하겠다고 한다.","Explain politely in advance and say you'll join next time.","best"],["억지로 참석해서 불편한 티를 낸다.","Go reluctantly and show you're uncomfortable.","bad"],["거짓 핑계를 댄다.","Make up an excuse.","bad"]],
+  why:"Honest, early communication respects the team."},
+ {ko:"야간 근무 중 동료가 졸면서 설비를 다루고 있다.",en:"On a night shift, a colleague is operating equipment while dozing off.",
+  o:[["모른 척한다.","Pretend not to notice.","worst"],["즉시 동료를 깨우고 잠시 교대를 제안하며, 필요하면 책임자에게 알린다.","Wake them immediately, offer to swap for a while, and tell the supervisor if needed.","best"],["나중에 상사에게만 보고한다.","Only report it to the manager later.","bad"],["증거로 사진을 찍어 둔다.","Take a photo as evidence.","bad"]],
+  why:"Immediate action to prevent an accident comes first."},
+ {ko:"한국 본사 직원과 베트남 현지 직원 사이에 업무 방식 차이로 갈등이 생겼다.",en:"Conflict arises between Korean HQ staff and Vietnamese local staff over different working styles.",
+  o:[["한국 방식이 맞다고 현지 직원들을 설득한다.","Persuade the local staff that the Korean way is right.","bad"],["양측의 입장을 듣고 차이를 설명하며 공통 기준을 함께 만든다.","Hear both sides, explain the differences, and build shared standards together.","best"],["베트남 직원들의 편을 든다.","Take the Vietnamese staff's side.","bad"],["관여하지 않는다.","Stay out of it.","worst"]],
+  why:"This is the bridge role global hires are expected to play."},
+ {ko:"매일 반복되는 업무가 지루하게 느껴진다.",en:"Your daily repetitive tasks feel boring.",
+  o:[["대충 처리한다.","Do them carelessly.","worst"],["업무를 더 효율적으로 개선할 방법을 찾아 제안한다.","Look for ways to make the work more efficient and propose them.","best"],["부서를 옮겨 달라고 바로 요청한다.","Ask to change departments right away.","bad"],["참고 계속한다.","Put up with it and continue.","ok"]],
+  why:"Turning routine into improvement shows initiative."},
+ {ko:"두 명의 상사에게서 동시에 급한 업무를 받았다.",en:"Two managers give you urgent tasks at the same time.",
+  o:[["먼저 받은 일만 한다.","Do only the first task you got.","bad"],["두 상사에게 상황을 알리고 우선순위를 확인한다.","Tell both managers the situation and confirm priorities.","best"],["둘 다 대충 끝낸다.","Rush through both.","worst"],["직급이 더 높은 상사의 일만 한다.","Do only the more senior manager's task.","ok"]],
+  why:"Transparent communication about priorities."},
+ {ko:"내가 작성한 보고서에서 선배가 여러 오류를 지적했다.",en:"A senior points out several errors in your report.",
+  o:[["변명한다.","Make excuses.","bad"],["감사를 표하고 수정한 뒤, 같은 실수를 막을 체크리스트를 만든다.","Thank them, fix it, and make a checklist to prevent the same mistakes.","best"],["기분이 상해 선배를 피한다.","Feel hurt and avoid the senior.","worst"],["지적받은 부분만 고친다.","Fix only what was pointed out.","ok"]],
+  why:"Accept feedback and prevent repeats."},
+ {ko:"한국어로 진행된 회의 내용을 절반 정도만 이해했다.",en:"You understood only about half of a meeting held in Korean.",
+  o:[["이해한 척하고 넘어간다.","Pretend you understood and move on.","worst"],["회의 후 핵심 내용을 정리해 동료에게 확인한다.","After the meeting, summarize the key points and check them with a colleague.","best"],["회의 중 계속 통역을 요청한다.","Keep asking for interpretation during the meeting.","ok"],["앞으로 회의에 참석하지 않는다.","Stop attending meetings.","bad"]],
+  why:"Honest follow-up beats pretending. Very relevant for you."},
+ {ko:"비용 절감을 위해 품질 검사를 줄이자는 의견이 나왔다.",en:"Someone suggests reducing quality inspections to cut costs.",
+  o:[["찬성한다.","Agree.","bad"],["품질 위험을 데이터로 설명하고 다른 비용 절감 방법을 제안한다.","Explain the quality risk with data and propose other ways to save cost.","best"],["아무 의견도 내지 않는다.","Say nothing.","bad"],["검사 횟수를 몰래 줄인다.","Secretly cut the inspections.","worst"]],
+  why:"Data-based, constructive objection."},
+ {ko:"폐수 측정값이 환경 기준을 약간 초과했다.",en:"A wastewater measurement slightly exceeds the environmental limit.",
+  o:[["다시 측정해서 기준 이하인 값만 기록한다.","Re-measure and record only a value under the limit.","worst"],["즉시 보고하고 원인을 조사해 조치한다.","Report it immediately, investigate the cause, and act.","best"],["한 번쯤은 괜찮다고 생각한다.","Think once is fine.","bad"],["다음 정기 측정까지 기다린다.","Wait for the next scheduled measurement.","bad"]],
+  why:"Data integrity and legal compliance. Your water-treatment background fits here."},
+ {ko:"입사 동기가 나보다 먼저 승진했다.",en:"A peer who joined with you is promoted before you.",
+  o:[["축하하고, 나에게 부족한 점을 돌아본다.","Congratulate them and reflect on what you can improve.","best"],["회사가 불공정하다고 비난한다.","Accuse the company of being unfair.","worst"],["동기와 거리를 둔다.","Distance yourself from them.","bad"],["바로 이직을 준비한다.","Start job hunting right away.","bad"]],
+  why:"Emotional maturity and self-reflection."},
+ {ko:"해외 파견 중 현지 작업자가 안전모를 쓰지 않고 일하고 있다.",en:"During an overseas posting, a local worker is working without a hard hat.",
+  o:[["문화 차이라고 생각하고 넘어간다.","Treat it as a cultural difference and let it go.","worst"],["작업을 멈추게 하고, 정중하지만 분명하게 안전모 착용을 안내한다.","Stop the work and politely but firmly tell them to wear a hard hat.","best"],["나중에 관리자에게 알린다.","Tell their supervisor later.","bad"],["크게 소리치며 혼낸다.","Shout at them.","bad"]],
+  why:"Safety first, delivered with respect."}
+];
+
+const GLOSS = [["매우 그렇다","strongly agree"],["그렇다","agree"],["약간 그렇다","slightly agree"],["약간 아니다","slightly disagree"],["아니다","disagree"],["전혀 아니다","not at all"],["~하는 편이다","I tend to ~"],["자주","often"],["종종","sometimes"],["가끔","occasionally"],["항상","always"],["결코 / 한 번도","never / not once"],["대체로","generally"],["쉽게","easily"],["금방","quickly, soon"],["되도록","if possible"],["굳이","bother to"],["동료","colleague"],["상사 / 윗사람","boss / superior"],["선배","senior colleague"],["지시","instruction"],["보고","report (to boss)"],["규칙 / 규정","rule / regulation"],["절차","procedure"],["마감 기한","deadline"],["책임","responsibility"],["갈등","conflict"],["실수","mistake"],["적응하다","to adapt"],["미루다","to postpone"],["양보하다","to concede"],["포기하다","to give up"],["꼼꼼하다","meticulous"],["침착하다","calm"],["솔직하다","honest, frank"],["부담스럽다","burdensome"],["즉흥적","spontaneous"],["성과","results, performance"],["도전","challenge"],["안전 수칙","safety rules"],["예 / 아니오","yes / no"],["가장 가깝다 / 가장 멀다","most / least like me"]];
+const LIKERT = [["전혀 아니다","Not at all"],["아니다","Disagree"],["약간 아니다","Slightly disagree"],["약간 그렇다","Slightly agree"],["그렇다","Agree"],["매우 그렇다","Strongly agree"]];
+const TKEYS = Object.keys(TRAITS);
+
+/* ---------- helpers ---------- */
+function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function shuffle(a,r){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+const $=s=>document.querySelector(s);
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function store(k,v){try{if(v===undefined){const x=localStorage.getItem(k);return x?JSON.parse(x):null}localStorage.setItem(k,JSON.stringify(v))}catch(e){return null}}
+const seedNow=()=>Math.floor(Math.random()*1e9);
+
+// All items, with facet ids
+const ITEMS=[];FACETS.forEach((f,fi)=>f[2].forEach((it,k)=>ITEMS.push({id:`f${fi}_${k}`,f:fi,trait:f[0],facet:f[1],rev:!!it[0],ko:it[1],en:it[2]})));
+const LIES=LIE.map((l,i)=>({id:`l${i}`,lie:true,trait:"L",rev:false,ko:l[0],en:l[1]}));
+const byFacet=fi=>ITEMS.filter(i=>i.f===fi);
+
+// Pick facets per trait, then spread each facet's 4 items across 4 "rounds" so repeats sit far apart
+function likertSet(seed,perTrait,lieN,itemsPerFacet){
+  const r=rng(seed);itemsPerFacet=itemsPerFacet||4;
+  let facets=[];
+  TKEYS.forEach((t,ti)=>{const ids=FACETS.map((f,i)=>f[0]===t?i:-1).filter(i=>i>=0);const n=typeof perTrait==="function"?perTrait(ti):perTrait;facets=facets.concat(shuffle(ids,r).slice(0,n))});
+  const groups=facets.map(fi=>shuffle(byFacet(fi),r).slice(0,itemsPerFacet));
+  let out=[];for(let k=0;k<itemsPerFacet;k++)out=out.concat(shuffle(groups.map(g=>g[k]).filter(Boolean),r));
+  shuffle(LIES,r).slice(0,lieN).forEach(l=>out.splice(Math.floor(r()*(out.length+1)),0,l));
+  return out;
+}
+function fcBlocks(seed,n){
+  const r=rng(seed);const pools={};
+  ITEMS.filter(i=>!i.rev).forEach(i=>(pools[i.trait]=pools[i.trait]||[]).push(i));
+  TKEYS.forEach(k=>pools[k]=shuffle(pools[k],r));
+  const idx={};const blocks=[];
+  for(let b=0;b<n;b++){const ts=shuffle(TKEYS,r).slice(0,4);blocks.push(ts.map(t=>{idx[t]=idx[t]||0;return pools[t][idx[t]++%pools[t].length]}))}
+  return blocks;
+}
+
+const MOCKS=[];
+for(let m=1;m<=10;m++)MOCKS.push({id:"mock"+m,kind:"likert",n:m,ko:`모의고사 ${m}`,en:`Mock ${m}`,build:()=>likertSet(1000+m*7919,ti=>((m+ti)%2?3:2),6),mins:12});
+const TESTS = [
+ ...MOCKS,
+ {id:"full",kind:"likert",ko:"실전 풀버전",en:"Full-length simulation",desc:"Real-test length: 236 statements in 40 minutes, with ideas repeated far apart and trap items mixed in. Do this when you have a quiet hour.",
+  build:()=>likertSet(seedNow(),8,12),mins:40},
+ {id:"speed",kind:"likert",ko:"스피드 훈련",en:"Speed drill",desc:"40 statements, only 7 seconds each. Trains you to trust your first honest reaction.",
+  build:()=>likertSet(seedNow(),ti=>ti<2?2:1,4,4).slice(0,40),perItem:7},
+ {id:"forced",kind:"forced",ko:"가장 가깝다 / 가장 멀다",en:"Most / least like me",desc:"Groups of 4 positive statements. Pick the one most like you (M) and least like you (L). New groups every time.",
+  build:()=>fcBlocks(seedNow(),24),mins:12},
+ {id:"yesno",kind:"yesno",ko:"예 / 아니오",en:"Yes / No",desc:"Fast binary answers with repeated ideas and 'never / always' traps. New questions every time.",
+  build:()=>likertSet(seedNow(),ti=>ti%3===0?2:1,6,4),mins:7},
+ {id:"sjt1",kind:"sjt",ko:"상황 판단 1",en:"Workplace situations, set 1",desc:"15 scenarios: reporting mistakes, safety, teamwork, working in Vietnam.",build:()=>SJT.slice(0,15),mins:12},
+ {id:"sjt2",kind:"sjt",ko:"상황 판단 2",en:"Workplace situations, set 2",desc:"15 more scenarios: customers, equipment alarms, environmental data, Korean meetings.",build:()=>SJT.slice(15),mins:12},
+ {id:"sjtr",kind:"sjt",ko:"상황 판단 랜덤",en:"Random situations",desc:"15 scenarios drawn at random from all 30.",build:()=>shuffle(SJT,rng(seedNow())).slice(0,15),mins:12}
+];
+const OTHER=TESTS.filter(t=>!t.id.startsWith("mock"));
+
+/* ---------- state ---------- */
+let S={lang:store("ip_lang")||"both"};
+let T=null,timerId=null;
+function setLang(l){S.lang=l;store("ip_lang",l);home()}
+function lastFor(id){const h=store("ip_hist")||[];for(let i=h.length-1;i>=0;i--)if(h[i].id===id)return h[i];return null}
+function countOf(t){if(t.kind==="forced")return 24;if(t.kind==="sjt")return 15;const x=t.build();return x.length}
+
+/* ---------- home ---------- */
+function home(){
+  clearInterval(timerId);T=null;
+  const hist=store("ip_hist")||[];
+  $("#app").innerHTML=`
+  <header class="top"><div><div class="eyebrow">인성검사 · personality test practice</div>
+    <h1>인성검사 <span>Practice Room</span></h1>
+    <p>Practise the formats Korean companies use in their online personality tests: 280 statements, 16 trap items and 30 workplace situations. All are original practice items, not a real company's test.</p></div></header>
+  <div class="settings">
+    <div class="seg"><label class="cap" id="lang-l">Language</label>
+      <div class="opts" role="group" aria-labelledby="lang-l">
+        <button id="lang-both" aria-pressed="${S.lang==="both"}">한국어 + English</button>
+        <button id="lang-ko" aria-pressed="${S.lang==="ko"}">한국어 only (exam mode)</button></div></div>
+    <p class="muted" style="margin:0;align-self:flex-end;font-size:13px;max-width:46ch">Exam mode hides English like the real test. Press <kbd>H</kbd> to peek at a translation. Peeks are counted.</p>
+  </div>
+  <section class="toc"><h2>모의고사 · Mock exams</h2>
+    <p class="muted" style="margin:0 0 12px;font-size:13.5px">10 fixed mocks of about 70–80 statements (12 min). Each uses a different mix of questions, so work through them in order and compare your scores.</p>
+    <div class="mockgrid">${MOCKS.map(t=>{const l=lastFor(t.id);return `<button class="mock" data-start="${t.id}"><b>${t.n}</b><span>${l?(l.c!=null?l.c+"% cons.":"done"):"not taken"}</span></button>`}).join("")}</div>
+  </section>
+  <section class="toc"><h2>More formats</h2>
+  ${OTHER.map(t=>{const n=countOf(t);const time=t.perItem?`${t.perItem} s / item`:`${t.mins} min`;const l=lastFor(t.id);
+    return `<div class="row"><div><h3><span class="ko">${t.ko}</span>${t.en}</h3><p>${t.desc}</p>
+      <div class="meta"><span>${n} ${t.kind==="forced"?"blocks":"items"}</span><span>${time}</span><span>${fmtKind(t.kind)}</span>${l?`<span>last: ${l.c!=null?l.c+"%":"done"}</span>`:""}</div></div>
+      <button class="btn" data-start="${t.id}">Start</button></div>`}).join("")}
+  </section>
+  <div class="twocol">
+    <section class="panel"><h2>Before you start</h2><ul class="tips">
+      <li><b>Answer as yourself at work</b>: responsible, cooperative, calm. Don't invent an "ideal" person.</li>
+      <li><b>Be consistent.</b> Each idea appears up to four times in different words, some reversed.</li>
+      <li><b>Don't agree with "never / always" perfection.</b> "I have never lied" is a trap.</li>
+      <li><b>Use 1 and 6 when they're truly you</b>, but not everywhere. Aim for about 15–35% extreme answers.</li>
+      <li><b>Keep moving.</b> Real tests give about 7–10 seconds per item. Don't leave blanks.</li></ul></section>
+    <section class="panel"><h2>Your history</h2>
+      ${hist.length?`<div class="tablewrap"><table class="hist"><thead><tr><th>Date</th><th>Test</th><th>Consistency</th><th>Traps</th><th>Extreme</th></tr></thead><tbody>
+      ${hist.slice(-10).reverse().map(h=>`<tr><td class="mono">${esc(h.d)}</td><td>${esc(h.t)}</td><td class="mono">${h.c==null?"–":h.c+"%"}</td><td class="mono">${h.f==null?"–":h.f}</td><td class="mono">${h.x==null?"–":h.x+"%"}</td></tr>`).join("")}
+      </tbody></table></div><div id="clr-area" style="margin-top:10px"><button class="btn ghost" id="clr">Clear history</button></div>`
+      :`<p class="muted">No attempts yet. Results are saved in this browser only.</p>`}</section>
+  </div>
+  <section class="panel" style="margin-top:30px"><h2>Key Korean words in these tests</h2>
+    <div class="gloss">${GLOSS.map(g=>`<div><b>${g[0]}</b><i>${g[1]}</i></div>`).join("")}</div></section>
+  <p class="note">Scores are practice feedback based on common scoring ideas (consistency, "too perfect" answers, extreme responding). Real company tests use their own scoring and norms.</p>`;
+  $("#lang-both").onclick=()=>setLang("both");$("#lang-ko").onclick=()=>setLang("ko");
+  document.querySelectorAll("[data-start]").forEach(b=>b.onclick=()=>start(b.dataset.start));
+  const c=$("#clr");if(c)c.onclick=()=>{$("#clr-area").innerHTML=`<div class="confirm"><span>Delete all saved attempts?</span><span style="display:flex;gap:8px"><button class="btn ghost" id="no">Keep</button><button class="btn" id="yes">Delete</button></span></div>`;$("#no").onclick=home;$("#yes").onclick=()=>{store("ip_hist",[]);home()}};
+}
+function fmtKind(k){return {likert:"6-point scale",forced:"forced choice",yesno:"yes / no",sjt:"situational"}[k]}
+
+/* ---------- run ---------- */
+function start(id){
+  const def=TESTS.find(t=>t.id===id);
+  T={def,items:def.build(),i:0,ans:{},peeks:0,t0:Date.now(),itemStart:Date.now(),times:{},left:def.mins?def.mins*60:null,itemLeft:def.perItem||null,shown:{}};
+  clearInterval(timerId);timerId=setInterval(tick,1000);q();window.scrollTo(0,0);
+}
+function tick(){
+  if(!T)return;
+  if(T.left!=null){T.left--;if(T.left<=0){finish();return}}
+  if(T.itemLeft!=null){T.itemLeft--;if(T.itemLeft<=0){next();return}}
+  const c=$("#clock");if(c){c.textContent=clockText();c.classList.toggle("low",(T.left!=null&&T.left<=60)||(T.itemLeft!=null&&T.itemLeft<=2))}
+}
+function clockText(){const s=T.left!=null?T.left:T.itemLeft;const m=Math.floor(s/60),x=s%60;return T.left!=null?`${m}:${String(x).padStart(2,"0")}`:`${x}s`}
+function bar(){
+  const n=T.items.length,done=Object.keys(T.ans).length;
+  return `<div class="bar"><span class="t"><span class="muted">${esc(T.def.ko)}</span> · ${esc(T.def.en)}</span>
+  <span style="display:flex;gap:14px;align-items:center"><span class="mono muted">${T.i+1} / ${n}</span><span class="clock mono" id="clock">${clockText()}</span>
+  <span id="quit-area"><button class="btn ghost" id="quit">Finish now</button></span></span>
+  <div class="prog" aria-hidden="true"><i style="width:${done/n*100}%"></i></div></div>`;
+}
+function enLine(en){if(S.lang==="both"||T.shown[T.i])return `<p class="en">${esc(en)}</p>`;return `<button class="peek" id="peek">Show English (H)</button>`}
+function q(){
+  const it=T.items[T.i];T.itemStart=Date.now();if(T.def.perItem)T.itemLeft=T.def.perItem;
+  const k=T.def.kind;let body="";const showEn=S.lang==="both"||T.shown[T.i];
+  if(k==="likert"||k==="yesno"){
+    const a=T.ans[it.id];
+    const opts=k==="likert"?LIKERT.map((l,x)=>`<button class="bub" data-v="${x+1}" aria-pressed="${a===x+1}" aria-label="${x+1} ${l[1]}"><span class="o">${x+1}</span><small>${l[0]}${S.lang==="both"?"<br>"+l[1]:""}</small></button>`).join("")
+      :[["예","Yes",1],["아니오","No",0]].map(o=>`<button class="bub" data-v="${o[2]}" aria-pressed="${a===o[2]}"><span class="o">${o[0][0]}</span><small>${o[0]}${S.lang==="both"?"<br>"+o[1]:""}</small></button>`).join("");
+    body=`<div class="sheet"><div class="qnum">문항 ${T.i+1}</div><p class="stmt">${esc(it.ko)}</p>${enLine(it.en)}
+      <div class="scale ${k==="yesno"?"two":""}">${opts}</div></div>
+      <div class="nav"><button class="btn ghost" id="prev" ${T.i===0||T.def.perItem?"disabled":""}>Previous</button><button class="btn" id="nx">${T.i===T.items.length-1?"Finish":"Next"}</button></div>
+      <p class="keys">Keys: ${k==="likert"?"<kbd>1</kbd>–<kbd>6</kbd>":"<kbd>Y</kbd> / <kbd>N</kbd>"} to answer · <kbd>→</kbd> next · <kbd>←</kbd> back${S.lang==="ko"?" · <kbd>H</kbd> peek English":""}</p>`;
+  } else if(k==="forced"){
+    const a=T.ans[T.i]||{};
+    body=`<div class="sheet"><div class="qnum">문항 ${T.i+1}</div><p class="stmt" style="font-size:18px">다음 중 자신과 가장 가까운 것(M)과 가장 먼 것(L)을 고르시오.</p>${enLine("Choose the statement MOST like you (M) and LEAST like you (L).")}
+      <div class="tablewrap"><table class="fc"><thead><tr><th>Statement</th><th>M</th><th>L</th></tr></thead><tbody>
+      ${it.map((s,x)=>`<tr><td class="s">${esc(s.ko)}${showEn?`<small>${esc(s.en)}</small>`:""}</td>
+      <td class="c"><button class="mini" data-m="${x}" aria-pressed="${a.m===x}" aria-label="Most like me">M</button></td>
+      <td class="c"><button class="mini" data-l="${x}" aria-pressed="${a.l===x}" aria-label="Least like me">L</button></td></tr>`).join("")}
+      </tbody></table></div></div>
+      <div class="nav"><button class="btn ghost" id="prev" ${T.i===0?"disabled":""}>Previous</button><button class="btn" id="nx" ${a.m==null||a.l==null?"disabled":""}>${T.i===T.items.length-1?"Finish":"Next"}</button></div>
+      <p class="keys">Pick one M and a different L to continue.${S.lang==="ko"?" <kbd>H</kbd> peek English":""}</p>`;
+  } else {
+    const a=T.ans[T.i];
+    body=`<div class="sheet"><div class="qnum">상황 ${T.i+1}</div><p class="stmt" style="font-size:19px">${esc(it.ko)}</p>${enLine(it.en)}
+      <p class="muted" style="margin:10px 0 0;font-size:13px">가장 적절한 행동은?${showEn?" · What is the most appropriate action?":""}</p>
+      <div class="opts-list">${it.o.map((o,x)=>`<button class="opt" data-o="${x}" aria-pressed="${a===x}"><span class="l">${"ABCD"[x]}</span><span>${esc(o[0])}${showEn?`<small>${esc(o[1])}</small>`:""}</span></button>`).join("")}</div></div>
+      <div class="nav"><button class="btn ghost" id="prev" ${T.i===0?"disabled":""}>Previous</button><button class="btn" id="nx" ${a==null?"disabled":""}>${T.i===T.items.length-1?"Finish":"Next"}</button></div>
+      <p class="keys">Keys: <kbd>A</kbd>–<kbd>D</kbd> to answer · <kbd>→</kbd> next${S.lang==="ko"?" · <kbd>H</kbd> peek English":""}</p>`;
+  }
+  $("#app").innerHTML=bar()+body;
+  $("#quit").onclick=()=>{$("#quit-area").innerHTML=`<span style="display:flex;gap:6px;align-items:center"><span class="muted" style="font-size:13px">End test?</span><button class="btn ghost" id="qno">No</button><button class="btn" id="qyes">End</button></span>`;$("#qno").onclick=q;$("#qyes").onclick=finish};
+  const pk=$("#peek");if(pk)pk.onclick=peek;
+  document.querySelectorAll(".bub").forEach(b=>b.onclick=()=>answer(it.id,+b.dataset.v));
+  document.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>fcPick("m",+b.dataset.m));
+  document.querySelectorAll("[data-l]").forEach(b=>b.onclick=()=>fcPick("l",+b.dataset.l));
+  document.querySelectorAll("[data-o]").forEach(b=>b.onclick=()=>{T.ans[T.i]=+b.dataset.o;q()});
+  const p=$("#prev");if(p)p.onclick=()=>{if(T.i>0){T.i--;q()}};
+  $("#nx").onclick=()=>next();
+}
+function peek(){if(!T.shown[T.i]){T.shown[T.i]=1;T.peeks++}q()}
+function answer(id,v){
+  T.ans[id]=v;T.times[id]=(Date.now()-T.itemStart)/1000;
+  document.querySelectorAll(".bub").forEach(b=>b.setAttribute("aria-pressed",+b.dataset.v===v));
+  setTimeout(()=>{if(T&&T.items[T.i]&&T.items[T.i].id===id)next()},180);
+}
+function fcPick(kind,x){const a=T.ans[T.i]||{};a[kind]=x;const o=kind==="m"?"l":"m";if(a[o]===x)a[o]=null;T.ans[T.i]=a;q()}
+function next(){if(!T)return;if(T.i<T.items.length-1){T.i++;q()}else finish()}
+document.addEventListener("keydown",e=>{
+  if(!T||e.metaKey||e.ctrlKey||e.altKey)return;
+  const k=T.def.kind,key=e.key.toLowerCase();
+  if(key==="h"&&S.lang==="ko"){peek();return}
+  if(k==="likert"&&/^[1-6]$/.test(key)){answer(T.items[T.i].id,+key);return}
+  if(k==="yesno"&&(key==="y"||key==="n")){answer(T.items[T.i].id,key==="y"?1:0);return}
+  if(k==="sjt"&&key.length===1&&"abcd".includes(key)){T.ans[T.i]="abcd".indexOf(key);q();return}
+  if(key==="arrowright"){const b=$("#nx");if(b&&!b.disabled)b.click()}
+  if(key==="arrowleft"){const b=$("#prev");if(b&&!b.disabled)b.click()}
+});
+
+/* ---------- scoring ---------- */
+function keyed(it,v){if(v==null)return null;return it.rev?7-v:v}
+function fmtA(k,v){if(v==null)return "blank";return k==="yesno"?(v?"예 (yes)":"아니오 (no)"):v+" · "+LIKERT[v-1][1]}
+function finish(){
+  clearInterval(timerId);const R=T;T=null;
+  const k=R.def.kind;const elapsed=Math.round((Date.now()-R.t0)/1000);
+  let html=`<header class="res-head"><div class="eyebrow">결과 · Results</div><h1>${esc(R.def.ko)} · ${esc(R.def.en)}</h1>
+    <p class="muted" style="margin:6px 0 0">Time used <span class="mono">${Math.floor(elapsed/60)}:${String(elapsed%60).padStart(2,"0")}</span>${R.peeks?` · English peeks <span class="mono">${R.peeks}</span>`:""}</p></header>`;
+  let hC=null,hF=null,hX=null;const fb=[];
+  if(k==="likert"||k==="yesno"){
+    const items=R.items,n=items.length;
+    const val=it=>{const v=R.ans[it.id];if(v==null)return null;return k==="yesno"?(v?6:1):v};
+    const answered=items.filter(it=>R.ans[it.id]!=null).length;
+    const tr={};items.filter(it=>!it.lie).forEach(it=>{const v=keyed(it,val(it));if(v!=null)(tr[it.trait]=tr[it.trait]||[]).push(v)});
+    // consistency within each facet
+    const fac={};items.filter(it=>!it.lie).forEach(it=>(fac[it.f]=fac[it.f]||[]).push(it));
+    let ok=0,tot=0;const bad=[];
+    Object.values(fac).forEach(g=>{for(let a=0;a<g.length;a++)for(let b=a+1;b<g.length;b++){const va=keyed(g[a],val(g[a])),vb=keyed(g[b],val(g[b]));if(va==null||vb==null)continue;tot++;if(Math.abs(va-vb)<=(k==="yesno"?0:2))ok++;else bad.push([g[a],g[b]])}});
+    const cons=tot?Math.round(ok/tot*100):null;hC=cons;
+    const lies=items.filter(it=>it.lie&&R.ans[it.id]!=null);
+    const lieHits=lies.filter(it=>k==="yesno"?R.ans[it.id]===1:R.ans[it.id]>=5);hF=lieHits.length;
+    const ext=k==="likert"?items.filter(it=>R.ans[it.id]===1||R.ans[it.id]===6).length:null;
+    const extPct=k==="likert"&&answered?Math.round(ext/answered*100):null;hX=extPct;
+    const ts=Object.values(R.times);const avg=ts.length?ts.reduce((a,b)=>a+b,0)/ts.length:0;
+    const pill=(v,g,w)=>v==null?"":v>=g?'<span class="pill good">good</span>':v>=w?'<span class="pill warn">check</span>':'<span class="pill bad">risk</span>';
+    const extPill=extPct==null?"":extPct<5?'<span class="pill warn">too cautious</span>':extPct<=40?'<span class="pill good">balanced</span>':extPct<=60?'<span class="pill warn">high</span>':'<span class="pill bad">very high</span>';
+    html+=`<div class="stats">
+      <div class="stat"><b>${answered}/${n}</b><span>answered</span><br>${answered===n?'<span class="pill good">complete</span>':'<span class="pill bad">blanks</span>'}</div>
+      <div class="stat"><b>${cons==null?"–":cons+"%"}</b><span>consistency (${tot} pairs)</span><br>${pill(cons,80,65)}</div>
+      <div class="stat"><b>${lieHits.length}/${lies.length}</b><span>"too perfect" answers</span><br>${lies.length?(lieHits.length<=1?'<span class="pill good">natural</span>':lieHits.length<=3?'<span class="pill warn">check</span>':'<span class="pill bad">faking risk</span>'):""}</div>
+      ${k==="likert"?`<div class="stat"><b>${extPct}%</b><span>extreme answers (1 or 6)</span><br>${extPill}</div>`:""}
+      <div class="stat"><b>${avg.toFixed(1)}s</b><span>average per item</span><br>${avg<=9?'<span class="pill good">on pace</span>':avg<=13?'<span class="pill warn">slow</span>':'<span class="pill bad">too slow</span>'}</div></div>`;
+    const prof=TKEYS.filter(t=>tr[t]).map(t=>{const m=tr[t].reduce((a,b)=>a+b,0)/tr[t].length;return [t,Math.round((m-1)/5*100)]});
+    html+=`<section><h2 style="font-size:16px;margin-top:26px">Trait profile</h2><div class="traits">`+prof.map(([t,p])=>`<div class="tr"><span>${TRAITS[t].ko} <span class="muted" style="font-size:12px">${TRAITS[t].en}</span></span><span class="track"><i style="width:${p}%"></i></span><span class="v">${p}</span></div>`).join("")+`</div></section>`;
+    if(answered<n)fb.push(["bad",`You left <b>${n-answered}</b> item(s) blank. Many real tests treat blanks as unreliable. Keep a steady pace so you finish.`]);
+    if(cons!=null&&cons<80)fb.push([cons<65?"bad":"warn",`Some answers contradicted each other. Review the pairs below: they measure the same idea.`]);
+    if(lieHits.length>=2)fb.push([lieHits.length>3?"bad":"warn",`You agreed with ${lieHits.length} "never / always" perfection statements. Real tests flag this as faking good.`]);
+    if(extPct!=null&&extPct>40)fb.push(["warn",`${extPct}% of your answers were at the extremes (1 or 6). Use 2–5 when you're not completely sure.`]);
+    if(extPct!=null&&extPct<5)fb.push(["warn",`Only ${extPct}% extreme answers, so your profile comes out flat. Choose 6 (매우 그렇다) or 1 (전혀 아니다) when a statement clearly is, or isn't, you. That shows your real strengths.`]);
+    if(prof.length>2){const sp=Math.max(...prof.map(p=>p[1]))-Math.min(...prof.map(p=>p[1]));if(sp<12)fb.push(["warn",`All traits are within ${sp} points of each other. A real person usually has clearer strengths.`])}
+    if(avg>9)fb.push(["warn",`Average ${avg.toFixed(1)} s per item. Real tests allow about 7–10 s. Trust your first honest reaction.`]);
+    if(R.peeks)fb.push(["warn",`You peeked at English ${R.peeks} time(s) (${Math.round(R.peeks/n*100)}% of items). Review the glossary and aim to peek less each round.`]);
+    if(!fb.length)fb.push(["good","Complete, consistent, natural and on pace. That's what a strong result looks like."]);
+    html+=`<section class="fb">${fb.map(f=>`<div class="${f[0]}">${f[1]}</div>`).join("")}</section>`;
+    if(bad.length)html+=`<section class="review"><h2 style="font-size:16px">Inconsistent pairs (${bad.length})</h2>${bad.slice(0,12).map(([a,b])=>`<details><summary>${esc(a.facet)}: ${esc(a.ko)}</summary><div class="ans">${esc(a.en)} → <b class="mono">${fmtA(k,R.ans[a.id])}</b><br>${esc(b.ko)} (${esc(b.en)}) → <b class="mono">${fmtA(k,R.ans[b.id])}</b><br><span class='muted'>${a.rev!==b.rev?"One statement is positive and the other negative about the same quality, so a consistent person agrees with one and disagrees with the other.":(a.rev?"Both statements describe the negative side of this quality, so a consistent person gives them similar answers.":"Both statements describe the positive side of this quality, so a consistent person gives them similar answers.")} Your answers differ by ${Math.abs(keyed(a,R.ans[a.id]==null?null:(k==="yesno"?(R.ans[a.id]?6:1):R.ans[a.id]))-keyed(b,R.ans[b.id]==null?null:(k==="yesno"?(R.ans[b.id]?6:1):R.ans[b.id])))} points on the same scale. If a statement could be read two ways, read it in a work context.</span></div></details>`).join("")}</section>`;
+    if(lieHits.length)html+=`<section class="review"><h2 style="font-size:16px">"Too perfect" answers</h2>${lieHits.map(it=>`<details><summary>${esc(it.ko)}</summary><div class="ans">${esc(it.en)} → <b class="mono">${fmtA(k,R.ans[it.id])}</b>. A natural, honest answer is usually "disagree".</div></details>`).join("")}</section>`;
+  } else if(k==="forced"){
+    const sc={};let done=0;
+    R.items.forEach((blk,i)=>{const a=R.ans[i];if(!a||a.m==null||a.l==null)return;done++;sc[blk[a.m].trait]=(sc[blk[a.m].trait]||0)+2;sc[blk[a.l].trait]=(sc[blk[a.l].trait]||0)-1});
+    const vals=TKEYS.map(t=>sc[t]||0);const mx=Math.max(1,...vals.map(Math.abs));
+    html+=`<div class="stats"><div class="stat"><b>${done}/${R.items.length}</b><span>blocks answered</span></div><div class="stat"><b>${Math.floor(elapsed/Math.max(1,done))}s</b><span>average per block</span></div></div>
+    <section><h2 style="font-size:16px;margin-top:26px">What you prioritized (M = +2, L = −1)</h2><div class="traits">${TKEYS.map((t,x)=>{const p=Math.round((vals[x]+mx)/(2*mx)*100);return `<div class="tr"><span>${TRAITS[t].ko} <span class="muted" style="font-size:12px">${TRAITS[t].en}</span></span><span class="track"><i style="width:${p}%"></i></span><span class="v">${vals[x]>0?"+":""}${vals[x]}</span></div>`}).join("")}</div></section>
+    <section class="fb"><div>Forced-choice tests show what you put first when every option sounds good. Manufacturing and management roles usually hope to see <b>integrity, conscientiousness and cooperation</b> near the top. Don't game it, but if a result surprises you, think about why.</div>
+    ${done<R.items.length?`<div class="bad">${R.items.length-done} block(s) unanswered.</div>`:""}</section>`;
+  } else {
+    let pts=0,done=0;const pv={best:3,ok:2,bad:1,worst:0};
+    R.items.forEach((s,i)=>{const a=R.ans[i];if(a==null)return;done++;pts+=pv[s.o[a][2]]});
+    const pct=Math.round(pts/(R.items.length*3)*100);hC=pct;
+    const lab={best:["best","Best"],ok:["ok","Acceptable"],bad:["bad","Weak"],worst:["bad","Worst"]};
+    html+=`<div class="stats"><div class="stat"><b>${pct}%</b><span>situational score</span><br>${pct>=80?'<span class="pill good">strong</span>':pct>=60?'<span class="pill warn">fair</span>':'<span class="pill bad">review</span>'}</div><div class="stat"><b>${done}/${R.items.length}</b><span>answered</span></div></div>
+    <section class="review"><h2 style="font-size:16px">Review each situation</h2>${R.items.map((s,i)=>{const a=R.ans[i];
+      return `<details ${a!=null&&s.o[a][2]!=="best"?"open":""}><summary>${i+1}. ${esc(s.ko)}</summary><div class="ans"><p class="muted" style="margin:4px 0">${esc(s.en)}</p>
+      ${s.o.map((o,x)=>`<div style="margin:3px 0">${"ABCD"[x]}. ${esc(o[0])} <span class="muted">${esc(o[1])}</span><span class="tag ${lab[o[2]][0]}">${lab[o[2]][1]}</span>${a===x?" <b>← your answer</b>":""}</div>`).join("")}
+      <p style="margin:8px 0 0">${esc(s.why)}</p></div></details>`}).join("")}</section>`;
+  }
+  html+=`<div class="nav" style="margin-top:26px"><button class="btn ghost" id="home">All tests</button><button class="btn" id="again">Try again</button></div>
+  <p class="note">Practice feedback only. Real company tests use their own scoring and norms.</p>`;
+  $("#app").innerHTML=html;
+  $("#home").onclick=home;$("#again").onclick=()=>start(R.def.id);
+  const h=store("ip_hist")||[];const d=new Date();
+  h.push({id:R.def.id,d:`${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`,t:R.def.en,c:hC,f:hF,x:hX});store("ip_hist",h.slice(-60));
+  window.scrollTo(0,0);
+}
+home();
+</script>
+</body>
+</html>
